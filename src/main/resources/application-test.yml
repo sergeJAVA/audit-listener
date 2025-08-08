@@ -1,0 +1,8 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: audit-listener
+  jpa:
+    show-sql: true

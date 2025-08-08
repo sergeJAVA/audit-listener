@@ -13,3 +13,7 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: create-drop
+
+audit:
+  kafka:
+    bootstrap-servers: localhost:9092
