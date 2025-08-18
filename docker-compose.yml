@@ -1,14 +1,14 @@
 services:
-  postgres:
-    container_name: auditListenerDB
-    image: postgres:17.4
-    restart: always
-    environment:
-      POSTGRES_DB: auditDB
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: pass
-    ports:
-      - "5441:5432"
+#  postgres:
+#    container_name: auditListenerDB
+#    image: postgres:17.4
+#    restart: always
+#    environment:
+#      POSTGRES_DB: auditDB
+#      POSTGRES_USER: root
+#      POSTGRES_PASSWORD: pass
+#    ports:
+#      - "5441:5432"
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.3

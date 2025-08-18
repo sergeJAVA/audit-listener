@@ -17,3 +17,7 @@ spring:
 audit:
   kafka:
     bootstrap-servers: localhost:9092
+
+elasticsearch:
+  username: elastic
+  password: 0=TqZL3DFaqRCizD=39e

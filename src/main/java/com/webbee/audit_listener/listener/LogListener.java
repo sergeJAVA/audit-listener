@@ -2,16 +2,15 @@ package com.webbee.audit_listener.listener;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webbee.audit_listener.document.AuditMethod;
+import com.webbee.audit_listener.document.AuditRequest;
 import com.webbee.audit_listener.event.HttpLogEvent;
 import com.webbee.audit_listener.event.MethodLogEvent;
-import com.webbee.audit_listener.model.HttpLog;
-import com.webbee.audit_listener.model.MethodLog;
-import com.webbee.audit_listener.service.HttpLogService;
-import com.webbee.audit_listener.service.MethodLogService;
+import com.webbee.audit_listener.repository.AuditMethodRepository;
+import com.webbee.audit_listener.repository.AuditRequestRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,10 +27,9 @@ import java.time.format.DateTimeFormatter;
 public class LogListener {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-    private final HttpLogService httpLogService;
-    private final MethodLogService methodLogService;
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final AuditMethodRepository auditMethodRepository;
+    private final AuditRequestRepository auditRequestRepository;
+    private final ObjectMapper objectMapper;
 
     /**
      * Метод для обработки сообщений приходящих из Kafka.
@@ -42,65 +40,53 @@ public class LogListener {
     @KafkaListener(topics = "audit-log")
     @Transactional
     public void handle(ConsumerRecord<String, String> consumerRecord) throws JsonProcessingException {
-        try {
-            log.info("ConsumerRecord<String, String> is being processed");
-            if (consumerRecord.key().equals("1")) {
-                MethodLogEvent event = objectMapper.readValue(consumerRecord.value(), MethodLogEvent.class);
-                methodLogService.saveMethodLog(toMethodLog(event));
-                log.info("MethodLog saved to database");
-            }
 
-            if (consumerRecord.key().equals("2")) {
-                HttpLogEvent event = objectMapper.readValue(consumerRecord.value(), HttpLogEvent.class);
-                httpLogService.saveHttpLog(toHttpLog(event));
-                log.info("HttpLog saved to database");
-            }
-            log.info("Processing completed");
-        }catch (JsonProcessingException ex) {
-            log.error("An error occurred while processing the event.");
-            throw ex;
+        log.info("ConsumerRecord<String, String> is being processed");
+        if (consumerRecord.key().equals("1")) {
+            MethodLogEvent event = objectMapper.readValue(consumerRecord.value(), MethodLogEvent.class);
+            auditMethodRepository.save(toAuditMethod(event));
+            log.info("MethodLog saved to database");
         }
 
+        if (consumerRecord.key().equals("2")) {
+            HttpLogEvent event = objectMapper.readValue(consumerRecord.value(), HttpLogEvent.class);
+            auditRequestRepository.save(toAuditRequest(event));
+            log.info("HttpLog saved to database");
+        }
+        log.info("Processing completed");
+
+
     }
 
-    /**
-     * Вспомогательный метод для преобразования ивента в сущность {@link MethodLog}
-     * @param event
-     * @return объект типа {@link MethodLog}
-     */
-    private MethodLog toMethodLog(MethodLogEvent event) {
-        MethodLog methodLog = new MethodLog();
-
-        methodLog.setTimestamp(LocalDateTime.parse(event.getLocalDateTime(), DATE_TIME_FORMATTER));
-        methodLog.setMethodName(event.getMethodName());
-        methodLog.setLogLevel(event.getLogLevel());
-        methodLog.setCorrelationId(event.getCorrelationId());
-        methodLog.setArgs(event.getArgs() != null ? event.getArgs() : null);
-        methodLog.setLogType(event.getLogType());
-        methodLog.setResult(event.getResult() != null ? event.getResult() : null);
-        methodLog.setExceptionMessage(event.getExceptionMessage() != null ? event.getExceptionMessage() : null);
-
-        return methodLog;
+    private AuditMethod toAuditMethod(MethodLogEvent event) {
+        AuditMethod auditMethod = new AuditMethod();
+        try {
+            auditMethod.setTimestamp(LocalDateTime.parse(event.getLocalDateTime(), DATE_TIME_FORMATTER));
+            auditMethod.setLogLevel(event.getLogLevel());
+            auditMethod.setCorrelationId(event.getCorrelationId());
+            auditMethod.setMethodName(event.getMethodName());
+            auditMethod.setArgs(event.getArgs());
+            auditMethod.setLogType(event.getLogType());
+            auditMethod.setResult(event.getResult() != null ? objectMapper.writeValueAsString(event.getResult()) : null);
+            auditMethod.setExceptionMessage(event.getExceptionMessage() != null ? event.getExceptionMessage() : null);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return auditMethod;
     }
 
-    /**
-     * Вспомогательный метод для преобразования ивента в сущность {@link HttpLog}
-     * @param event
-     * @return объект типа {@link HttpLog}
-     */
-    private HttpLog toHttpLog(HttpLogEvent event) {
-        HttpLog httpLog = new HttpLog();
+    private AuditRequest toAuditRequest(HttpLogEvent event) {
+        AuditRequest auditRequest = new AuditRequest();
 
-        httpLog.setTimestamp(event.getTimestamp());
-        httpLog.setType(event.getType());
-        httpLog.setMethod(event.getMethod());
-        httpLog.setStatus(event.getStatus());
-        httpLog.setPath(event.getPath());
-        httpLog.setQueryParams(event.getQueryParams());
-        httpLog.setRequestBody(event.getRequestBody());
-        httpLog.setResponseBody(event.getResponseBody());
+        auditRequest.setTimestamp(event.getTimestamp());
+        auditRequest.setRequestType(event.getType());
+        auditRequest.setMethod(event.getMethod());
+        auditRequest.setStatusCode(String.valueOf(event.getStatus()));
+        auditRequest.setPath(event.getPath());
+        auditRequest.setRequestBody(event.getRequestBody().isEmpty() ? "{}" : event.getRequestBody());
+        auditRequest.setResponseBody(event.getResponseBody().isEmpty() ? "{}" : event.getResponseBody());
 
-        return httpLog;
+        return auditRequest;
     }
 
 }
