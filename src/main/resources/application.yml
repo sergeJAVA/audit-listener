@@ -21,3 +21,4 @@ audit:
 elasticsearch:
   username: elastic
   password: 0=TqZL3DFaqRCizD=39e
+  recreate-indices: true
