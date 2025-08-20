@@ -4,15 +4,6 @@ server:
 spring:
   application:
     name: audit-listener
-  datasource:
-    url: jdbc:postgresql://localhost:5441/auditDB
-    username: root
-    password: pass
-    driverClassName: org.postgresql.Driver
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: create-drop
 
 audit:
   kafka:

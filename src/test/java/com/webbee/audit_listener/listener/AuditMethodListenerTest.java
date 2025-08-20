@@ -40,7 +40,7 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class AuditMethodListenerTest extends TestContainer{
 
     @Autowired
@@ -63,7 +63,7 @@ class AuditMethodListenerTest extends TestContainer{
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, "true");
-        props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-id");
+        props.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-id" + UUID.randomUUID());
 
         Properties propsConsumer = new Properties();
         propsConsumer.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());

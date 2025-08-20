@@ -4,5 +4,8 @@ server:
 spring:
   application:
     name: audit-listener
-  jpa:
-    show-sql: true
+
+elasticsearch:
+  username: elastic
+  password: 0=TqZL3DFaqRCizD=39e
+  recreate-indices: true
