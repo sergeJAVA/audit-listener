@@ -1,6 +1,5 @@
 package com.webbee.audit_listener.document;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.webbee.audit_listener.util.Indices;
 import lombok.AllArgsConstructor;
@@ -13,7 +12,6 @@ import org.springframework.data.elasticsearch.annotations.Mapping;
 import org.springframework.data.elasticsearch.annotations.Setting;
 
 import java.time.LocalDateTime;
-
 
 @Getter
 @Setter

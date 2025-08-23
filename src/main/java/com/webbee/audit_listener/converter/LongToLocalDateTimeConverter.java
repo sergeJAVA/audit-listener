@@ -8,8 +8,10 @@ import java.time.ZoneOffset;
 
 @ReadingConverter
 public class LongToLocalDateTimeConverter implements Converter<Long, LocalDateTime> {
+
     @Override
     public LocalDateTime convert(Long source) {
         return source == null ? null : LocalDateTime.ofInstant(Instant.ofEpochMilli(source), ZoneOffset.UTC);
     }
+
 }
