@@ -40,7 +40,7 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 class AuditMethodListenerTest extends TestContainer{
 
     @Autowired
@@ -138,7 +138,7 @@ class AuditMethodListenerTest extends TestContainer{
         producer.commitTransaction();
         producer.close();
 
-        await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             verify(auditMethodProcessor, times(1)).process(any(MethodLogEvent.class));
             assertThat(auditMethodRepository.count()).isOne();
         });
